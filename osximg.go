@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
+	"strings"
 )
 
 type Disk struct {
@@ -206,6 +208,23 @@ func writeDisk(src, dst string) error {
 	return cmd.Run()
 }
 
+// confirmRdisk checks if user passed /dev/diskX and prompts to use /dev/rdiskX
+func confirmRdisk(disk string) string {
+	re := regexp.MustCompile(`^/dev/disk(\d+)$`)
+	matches := re.FindStringSubmatch(disk)
+	if matches != nil {
+		rdisk := "/dev/rdisk" + matches[1]
+		fmt.Printf("%s detected. Do you want to use %s instead for faster performance? [y/N]: ", disk, rdisk)
+
+		var response string
+		fmt.Scanln(&response)
+		if strings.ToLower(response) == "y" {
+			return rdisk
+		}
+	}
+	return disk
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: osximg {list|clone|write}")
@@ -223,19 +242,18 @@ func main() {
 			fmt.Println("Usage: osximg clone /dev/diskX /path/to/file.img")
 			os.Exit(1)
 		}
-		if err := cloneDisk(os.Args[2], os.Args[3]); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
+		disk := confirmRdisk(os.Args[2])
+		imgPath := os.Args[3]
+		cloneDisk(disk, imgPath)
+
 	case "write":
 		if len(os.Args) != 4 {
 			fmt.Println("Usage: osximg write /path/to/file.img /dev/diskX")
 			os.Exit(1)
 		}
-		if err := writeDisk(os.Args[2], os.Args[3]); err != nil {
-			fmt.Println("Error:", err)
-			os.Exit(1)
-		}
+		imgPath := os.Args[2]
+		disk := confirmRdisk(os.Args[3])
+		writeDisk(imgPath, disk)
 	default:
 		fmt.Println("Usage: osximg {list|clone|write}")
 		os.Exit(1)

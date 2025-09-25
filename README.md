@@ -46,13 +46,17 @@ osximg list
 Example output:
 
 ```
-/dev/disk0 (500GB, GUID_partition_scheme)
-  ├─ /dev/disk0s1  Apple_APFS_ISC      524MB
-  ├─ /dev/disk0s2  Apple_APFS          494GB
-  └─ /dev/disk0s3  Apple_APFS_Recovery 5.3GB
+└─ /dev/disk3 [Apple_APFS_Container] (460.4 GB)
+   ├─ /dev/disk3s1 [Macintosh HD - Data] (460.4 GB)
+   ├─ /dev/disk3s2 [Update] (460.4 GB)
+   ├─ /dev/disk3s3 [Macintosh HD] (460.4 GB)
+   ├─ /dev/disk3s3s1 [Macintosh HD] (460.4 GB)
+   ├─ /dev/disk3s4 [Preboot] (460.4 GB)
+   ├─ /dev/disk3s5 [Recovery] (460.4 GB)
+   └─ /dev/disk3s6 [VM] (460.4 GB)
 
-/dev/disk8 (4TB, GUID_partition_scheme)
-  └─ /dev/disk8s1  Microsoft Basic Data 4TB  [4TBSSD]
+└─ /dev/disk9 [GUID_partition_scheme] (14.8 GB)
+   └─ /dev/disk9s1 [Linux Filesystem] (14.7 GB)
 ```
 
 ---

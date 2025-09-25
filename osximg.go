@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const version = "v0.1.3"
+
 type Disk struct {
 	DeviceIdentifier string `json:"DeviceIdentifier"`
 	Content          string `json:"Content"`
@@ -191,12 +193,28 @@ func cloneDisk(src, dst string) error {
 }
 
 func writeDisk(src, dst string) error {
-	totalSize, err := getDiskSize(dst)
+	// Get source image size
+	info, err := os.Stat(src)
 	if err != nil {
-		return fmt.Errorf("failed to get disk size: %v", err)
+		return fmt.Errorf("failed to get source image size: %v", err)
+	}
+	imageSize := info.Size()
+
+	// Check if target disk is internal
+	internal, err := isInternalDisk(dst)
+	if err == nil && internal {
+		fmt.Printf("⚠ WARNING: %s is an INTERNAL disk!\n", dst)
+		fmt.Print("Are you absolutely sure you want to continue? Type INTERNAL to confirm: ")
+		var confirmInternal string
+		fmt.Scanln(&confirmInternal)
+		if confirmInternal != "INTERNAL" {
+			fmt.Println("Aborted.")
+			return nil
+		}
 	}
 
 	fmt.Printf("⚠ WARNING: This will overwrite all data on %s\n", dst)
+	fmt.Printf("Source image size: %s (%d bytes)\n", hrSize(imageSize), imageSize)
 	fmt.Print("Type YES to continue: ")
 	var confirm string
 	fmt.Scanln(&confirm)
@@ -205,7 +223,9 @@ func writeDisk(src, dst string) error {
 		return nil
 	}
 
-	cmdStr := fmt.Sprintf("pv -s %d %s | dd of=%s bs=1m", totalSize, src, dst)
+	fmt.Printf("Writing %s → %s\n", src, dst)
+
+	cmdStr := fmt.Sprintf("pv -s %d %s | dd of=%s bs=1m", imageSize, src, dst)
 	fmt.Println("Running (sudo required):", cmdStr)
 
 	cmd := exec.Command("sudo", "bash", "-c", cmdStr)
@@ -213,6 +233,31 @@ func writeDisk(src, dst string) error {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	return cmd.Run()
+}
+
+func isInternalDisk(path string) (bool, error) {
+	cmd := exec.Command("diskutil", "info", "-plist", path)
+	out, err := cmd.Output()
+	if err != nil {
+		return false, err
+	}
+
+	pl := exec.Command("plutil", "-convert", "json", "-o", "-", "--", "-")
+	pl.Stdin = bytes.NewReader(out)
+	jsonOut, err := pl.Output()
+	if err != nil {
+		return false, err
+	}
+
+	var info map[string]interface{}
+	if err := json.Unmarshal(jsonOut, &info); err != nil {
+		return false, err
+	}
+
+	if v, ok := info["Internal"].(bool); ok {
+		return v, nil
+	}
+	return false, nil
 }
 
 // confirmRdisk checks if user passed /dev/diskX and prompts to use /dev/rdiskX
@@ -239,11 +284,13 @@ func main() {
 	}
 
 	switch os.Args[1] {
+
 	case "list":
 		if err := listDisks(); err != nil {
 			fmt.Println("Error:", err)
 			os.Exit(1)
 		}
+
 	case "clone":
 		if len(os.Args) != 4 {
 			fmt.Println("Usage: osximg clone /dev/diskX /path/to/file.img")
@@ -261,8 +308,12 @@ func main() {
 		imgPath := os.Args[2]
 		disk := confirmRdisk(os.Args[3])
 		writeDisk(imgPath, disk)
+
+	case "version":
+		fmt.Println(version)
+
 	default:
-		fmt.Println("Usage: osximg {list|clone|write}")
+		fmt.Printf("osximg version %s\n\nUsage: osximg {list|clone|write}", version)
 		os.Exit(1)
 	}
 }

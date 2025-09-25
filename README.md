@@ -13,15 +13,13 @@ A simple macOS command-line tool to **list disks/volumes** and **clone/write raw
 
 ## Installation
 
-### System dependencies
+Install packages:
 
 ```bash
-brew install pv
+brew install go pv
 ```
 
-### Using Go
-
-Make sure you have [Go installed](https://golang.org/doc/install) (Go 1.22+).
+Install `osximg` using `go`:
 
 ```bash
 go install github.com/adonespitogo/osximg@latest
@@ -30,7 +28,7 @@ go install github.com/adonespitogo/osximg@latest
 Ensure your Go binary path is in your `PATH`:
 
 ```bash
-export PATH=$PATH:$(go env GOPATH)/bin
+echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.zshrc
 ```
 
 Verify installation:

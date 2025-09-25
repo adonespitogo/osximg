@@ -113,15 +113,22 @@ func printDiskTree(d Disk, prefix string, isLast bool) {
 		fs = "APFS"
 	}
 
+	// Combine label and fs, label comes first
+	labelFs := label
+	if fs != "-" {
+		if label != "-" {
+			labelFs = fmt.Sprintf("%s | %s", label, fs)
+		} else {
+			labelFs = fs
+		}
+	}
+
 	size := "-"
 	if d.Size > 0 {
 		size = hrSize(d.Size)
 	}
 
-	line := fmt.Sprintf("%s%s/dev/%s [%s]", prefix, branch, d.DeviceIdentifier, fs)
-	if label != "-" {
-		line += " " + label
-	}
+	line := fmt.Sprintf("%s%s/dev/%s [%s]", prefix, branch, d.DeviceIdentifier, labelFs)
 	if size != "-" {
 		line += " (" + size + ")"
 	}

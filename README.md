@@ -18,7 +18,7 @@ A simple macOS command-line tool to **list disks/volumes** and **clone/write raw
 Make sure you have [Go installed](https://golang.org/doc/install) (Go 1.22+).
 
 ```bash
-go install -u github.com/adonespitogo/osximg@latest
+go install github.com/adonespitogo/osximg@latest
 ```
 
 Ensure your Go binary path is in your `PATH`:

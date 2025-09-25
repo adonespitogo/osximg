@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const version = "v0.1.5"
+const version = "v0.1.6"
 
 type Disk struct {
 	DeviceIdentifier string `json:"DeviceIdentifier"`
@@ -186,7 +186,7 @@ func cloneDisk(src, dst string) error {
 		return fmt.Errorf("failed to get disk size: %v", err)
 	}
 
-	fmt.Printf("Disk size: %s (%d bytes)", hrSize(totalSize), totalSize)
+	fmt.Printf("Disk size: %s (%d bytes)\n", hrSize(totalSize), totalSize)
 	cmdStr := fmt.Sprintf("dd if=%s bs=1m | pv -s %d | dd of=%s bs=1m", src, totalSize, dst)
 	fmt.Println("Running (sudo required):", cmdStr)
 
@@ -271,11 +271,11 @@ func confirmRdisk(disk string) string {
 	matches := re.FindStringSubmatch(disk)
 	if matches != nil {
 		rdisk := "/dev/rdisk" + matches[1]
-		fmt.Printf("%s detected. Do you want to use %s instead for faster performance? [y/N]: ", disk, rdisk)
+		fmt.Printf("%s detected. Do you want to use %s instead for faster performance? [Y/n]: ", disk, rdisk)
 
 		var response string
 		fmt.Scanln(&response)
-		if strings.ToLower(response) == "y" {
+		if strings.ToLower(response) != "n" {
 			return rdisk
 		}
 	}

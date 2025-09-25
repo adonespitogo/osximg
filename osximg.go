@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const version = "v0.1.4"
+const version = "v0.1.5"
 
 type Disk struct {
 	DeviceIdentifier string `json:"DeviceIdentifier"`
@@ -50,18 +50,18 @@ func listDisks() error {
 		return err
 	}
 
-	var root map[string]interface{}
+	var root map[string]any
 	if err := json.Unmarshal(jsonOut, &root); err != nil {
 		return err
 	}
 
-	all, ok := root["AllDisksAndPartitions"].([]interface{})
+	all, ok := root["AllDisksAndPartitions"].([]any)
 	if !ok {
 		return fmt.Errorf("unexpected plist structure")
 	}
 
 	for i, d := range all {
-		disk := parseDisk(d.(map[string]interface{}))
+		disk := parseDisk(d.(map[string]any))
 		printDiskTree(disk, "", true)
 
 		// spacing between parent disks
@@ -73,7 +73,7 @@ func listDisks() error {
 	return nil
 }
 
-func parseDisk(m map[string]interface{}) Disk {
+func parseDisk(m map[string]any) Disk {
 	d := Disk{}
 	if v, ok := m["DeviceIdentifier"].(string); ok {
 		d.DeviceIdentifier = v
@@ -88,14 +88,14 @@ func parseDisk(m map[string]interface{}) Disk {
 		d.Size = int64(v)
 	}
 
-	if parts, ok := m["Partitions"].([]interface{}); ok {
+	if parts, ok := m["Partitions"].([]any); ok {
 		for _, p := range parts {
-			d.Partitions = append(d.Partitions, parseDisk(p.(map[string]interface{})))
+			d.Partitions = append(d.Partitions, parseDisk(p.(map[string]any)))
 		}
 	}
-	if vols, ok := m["APFSVolumes"].([]interface{}); ok {
+	if vols, ok := m["APFSVolumes"].([]any); ok {
 		for _, v := range vols {
-			d.APFSVolumes = append(d.APFSVolumes, parseDisk(v.(map[string]interface{})))
+			d.APFSVolumes = append(d.APFSVolumes, parseDisk(v.(map[string]any)))
 		}
 	}
 	return d
@@ -169,7 +169,7 @@ func getDiskSize(path string) (int64, error) {
 		return 0, err
 	}
 
-	var info map[string]interface{}
+	var info map[string]any
 	if err := json.Unmarshal(jsonOut, &info); err != nil {
 		return 0, err
 	}
@@ -186,6 +186,7 @@ func cloneDisk(src, dst string) error {
 		return fmt.Errorf("failed to get disk size: %v", err)
 	}
 
+	fmt.Printf("Disk size: %s (%d bytes)", hrSize(totalSize), totalSize)
 	cmdStr := fmt.Sprintf("dd if=%s bs=1m | pv -s %d | dd of=%s bs=1m", src, totalSize, dst)
 	fmt.Println("Running (sudo required):", cmdStr)
 
@@ -253,7 +254,7 @@ func isInternalDisk(path string) (bool, error) {
 		return false, err
 	}
 
-	var info map[string]interface{}
+	var info map[string]any
 	if err := json.Unmarshal(jsonOut, &info); err != nil {
 		return false, err
 	}

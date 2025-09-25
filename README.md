@@ -13,6 +13,12 @@ A simple macOS command-line tool to **list disks/volumes** and **clone/write raw
 
 ## Installation
 
+### System dependencies
+
+```bash
+brew install pv
+```
+
 ### Using Go
 
 Make sure you have [Go installed](https://golang.org/doc/install) (Go 1.22+).

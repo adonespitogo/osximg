@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const version = "v0.1.3"
+const version = "v0.1.4"
 
 type Disk struct {
 	DeviceIdentifier string `json:"DeviceIdentifier"`
@@ -19,6 +19,10 @@ type Disk struct {
 	Size             int64  `json:"Size"`
 	APFSVolumes      []Disk `json:"APFSVolumes"`
 	Partitions       []Disk `json:"Partitions"`
+}
+
+func usage() string {
+	return fmt.Sprintf("osximg version %s\n\nUsage: osximg {list|clone|write}", version)
 }
 
 func hrSize(size int64) string {
@@ -279,7 +283,7 @@ func confirmRdisk(disk string) string {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: osximg {list|clone|write}")
+		fmt.Println(usage())
 		os.Exit(1)
 	}
 
@@ -313,7 +317,7 @@ func main() {
 		fmt.Println(version)
 
 	default:
-		fmt.Printf("osximg version %s\n\nUsage: osximg {list|clone|write}", version)
+		fmt.Println(usage())
 		os.Exit(1)
 	}
 }
